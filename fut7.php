@@ -39,8 +39,18 @@
         echo "<p>Error de conexión con la base de datos.</p>";
       }
 
-      $sql = "SELECT nombre, goles FROM jugadores WHERE nombre LIKE '%" . $jugador ."%'";
-      $resultado = mysqli_query($conexion, $sql);
+      // Esta sería la forma vulnerable de realizar la consulta a la BBDD.
+      // $sql = "SELECT nombre, goles FROM jugadores WHERE nombre LIKE '%" . $jugador ."%'";
+      // $resultado = mysqli_query($conexion, $sql);
+
+      // Con esta parte del código estaría subsanada esa vulnerabilidad, ya que la consulta estaría parametrizada.
+      $jugador = "%{$jugador}%";
+      $sql = "SELECT nombre, goles FROM jugadores WHERE nombre LIKE ?";
+      $statement = mysqli_prepare($conexion, $sql);
+      mysqli_stmt_bind_param($statement, "s", $jugador);
+      mysqli_stmt_execute($statement);
+      $resultado = mysqli_stmt_get_result($statement);
+
       $count_results = mysqli_num_rows($resultado);
 
       //Si hay resultados
